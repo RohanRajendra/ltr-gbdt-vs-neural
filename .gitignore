@@ -218,3 +218,17 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# --- project-specific ---
+/data/*
+!/data/README.md
+*.svm
+*.svm.gz
+*.tar.gz
+*.jsonl.gz
+*.pt
+*.ckpt
+*.bin
+*.lgb
+wandb/
+.DS_Store
