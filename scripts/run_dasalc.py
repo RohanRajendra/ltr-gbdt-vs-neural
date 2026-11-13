@@ -14,7 +14,7 @@ import numpy as np
 import torch
 
 from ltr.dasalc import DASALC, log1p_transform, softmax_ce_loss
-from ltr.data import REPO, load_split
+from ltr.data import RESULTS, load_split
 from ltr.metrics import mean_ndcg
 
 p = argparse.ArgumentParser()
@@ -118,7 +118,7 @@ res = dict(dataset=a.dataset, fold=a.fold, args=vars(a), device=dev, epochs_run=
 for k in (1, 5, 10):
     for empty in ("one", "zero", "skip"):
         res[f"ndcg@{k}_{empty}"] = round(mean_ndcg(te.y, score, te.group, k, empty), 4)
-out = REPO / "results" / "dasalc" / f"{a.dataset}_f{a.fold}{a.tag}.json"
+out = RESULTS / "dasalc" / f"{a.dataset}_f{a.fold}{a.tag}.json"
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(res, indent=2))
 print(json.dumps({k: v for k, v in res.items() if k != "args"}, indent=2))

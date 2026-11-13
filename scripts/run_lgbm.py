@@ -14,7 +14,7 @@ from pathlib import Path
 import lightgbm as lgb
 import numpy as np
 
-from ltr.data import REPO, load_split
+from ltr.data import RESULTS, load_split
 from ltr.metrics import mean_ndcg
 
 p = argparse.ArgumentParser()
@@ -59,7 +59,7 @@ for k in (1, 5, 10):
     for empty in ("one", "zero", "skip"):
         res[f"ndcg@{k}_{empty}"] = round(mean_ndcg(te.y, score, te.group, k, empty), 4)
 
-out = REPO / "results" / "lgbm" / f"{a.dataset}_f{a.fold}.json"
+out = RESULTS / "lgbm" / f"{a.dataset}_f{a.fold}.json"
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(res, indent=2))
 print(json.dumps({k: v for k, v in res.items() if k != "params"}, indent=2))
