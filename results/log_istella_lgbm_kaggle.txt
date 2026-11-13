@@ -1,0 +1,47 @@
+[{"stream_name":"stdout","time":1.212554455,"data":"dataset at /kaggle/input/datasets/rohanrajendra12/ltr-istella-full\n"}
+,{"stream_name":"stdout","time":1.361194139,"data":"linked /kaggle/working/raw/istella/full/train.txt -\u003e /kaggle/input/datasets/rohanrajendra12/ltr-istella-full/train.txt\n"}
+,{"stream_name":"stdout","time":1.392268019,"data":"linked /kaggle/working/raw/istella/full/test.txt -\u003e /kaggle/input/datasets/rohanrajendra12/ltr-istella-full/test.txt\n"}
+,{"stream_name":"stdout","time":1.4416838539999999,"data":"               total        used        free      shared  buff/cache   available\n"}
+,{"stream_name":"stdout","time":1.441712922,"data":"Mem:              31           0          26           0           4          30\n"}
+,{"stream_name":"stdout","time":1.441716637,"data":"Swap:              0           0           0\n"}
+,{"stream_name":"stdout","time":1.448759467,"data":"4\n"}
+,{"stream_name":"stdout","time":1544.109662171,"data":"istella fold 1: train 20845 q / 6576164 docs, vali 2374 q, test 9799 q, 220 feats  (load 1531s)\n"}
+,{"stream_name":"stdout","time":1878.305236066,"data":"[100]\tvali's ndcg@5: 0.652661\tvali's ndcg@10: 0.698048\n"}
+,{"stream_name":"stdout","time":2179.497618044,"data":"[200]\tvali's ndcg@5: 0.675833\tvali's ndcg@10: 0.721673\n"}
+,{"stream_name":"stdout","time":2462.205729201,"data":"[300]\tvali's ndcg@5: 0.689835\tvali's ndcg@10: 0.736006\n"}
+,{"stream_name":"stdout","time":2710.374509276,"data":"[400]\tvali's ndcg@5: 0.696143\tvali's ndcg@10: 0.74259\n"}
+,{"stream_name":"stdout","time":2946.652734521,"data":"[500]\tvali's ndcg@5: 0.699829\tvali's ndcg@10: 0.745448\n"}
+,{"stream_name":"stdout","time":3174.590718193,"data":"[600]\tvali's ndcg@5: 0.703528\tvali's ndcg@10: 0.748563\n"}
+,{"stream_name":"stdout","time":3386.614489811,"data":"[700]\tvali's ndcg@5: 0.705523\tvali's ndcg@10: 0.751247\n"}
+,{"stream_name":"stdout","time":3603.182805715,"data":"[800]\tvali's ndcg@5: 0.707222\tvali's ndcg@10: 0.752518\n"}
+,{"stream_name":"stdout","time":3823.725111719,"data":"[900]\tvali's ndcg@5: 0.708682\tvali's ndcg@10: 0.754591\n"}
+,{"stream_name":"stdout","time":4029.324128484,"data":"[1000]\tvali's ndcg@5: 0.710193\tvali's ndcg@10: 0.755869\n"}
+,{"stream_name":"stdout","time":4237.41865198,"data":"[1100]\tvali's ndcg@5: 0.710267\tvali's ndcg@10: 0.75663\n"}
+,{"stream_name":"stdout","time":4443.710314014,"data":"[1200]\tvali's ndcg@5: 0.711034\tvali's ndcg@10: 0.757298\n"}
+,{"stream_name":"stdout","time":4653.571010262,"data":"[1300]\tvali's ndcg@5: 0.711132\tvali's ndcg@10: 0.757455\n"}
+,{"stream_name":"stdout","time":4875.617510426,"data":"[1400]\tvali's ndcg@5: 0.71148\tvali's ndcg@10: 0.758556\n"}
+,{"stream_name":"stdout","time":5278.215811565,"data":"{\n"}
+,{"stream_name":"stdout","time":5278.216109619,"data":"  \"dataset\": \"istella\",\n"}
+,{"stream_name":"stdout","time":5278.216123913,"data":"  \"fold\": 1,\n"}
+,{"stream_name":"stdout","time":5278.216129439,"data":"  \"best_iter\": 1342,\n"}
+,{"stream_name":"stdout","time":5278.21613425,"data":"  \"train_sec\": 3421.2,\n"}
+,{"stream_name":"stdout","time":5278.216139144,"data":"  \"predict_ms_per_query\": 31.4506,\n"}
+,{"stream_name":"stdout","time":5278.216143901,"data":"  \"n_test_queries\": 9799,\n"}
+,{"stream_name":"stdout","time":5278.216148824,"data":"  \"frac_test_queries_no_rel\": 0.0014287172160424534,\n"}
+,{"stream_name":"stdout","time":5278.216153728,"data":"  \"ndcg@1_one\": 0.7433,\n"}
+,{"stream_name":"stdout","time":5278.21615842,"data":"  \"ndcg@1_zero\": 0.7419,\n"}
+,{"stream_name":"stdout","time":5278.216162608,"data":"  \"ndcg@1_skip\": 0.743,\n"}
+,{"stream_name":"stdout","time":5278.216174454,"data":"  \"ndcg@5_one\": 0.7046,\n"}
+,{"stream_name":"stdout","time":5278.216178493,"data":"  \"ndcg@5_zero\": 0.7032,\n"}
+,{"stream_name":"stdout","time":5278.216182181,"data":"  \"ndcg@5_skip\": 0.7042,\n"}
+,{"stream_name":"stdout","time":5278.216185949,"data":"  \"ndcg@10_one\": 0.7527,\n"}
+,{"stream_name":"stdout","time":5278.216189741,"data":"  \"ndcg@10_zero\": 0.7513,\n"}
+,{"stream_name":"stdout","time":5278.216193648,"data":"  \"ndcg@10_skip\": 0.7524\n"}
+,{"stream_name":"stdout","time":5278.2161975,"data":"}\n"}
+,{"stream_name":"stderr","time":5283.741502631,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":5283.741682656,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":5284.308784162,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":5284.308853586,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":5285.518542248,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":5287.227457448,"data":"[NbConvertApp] Writing 281601 bytes to __results__.html\n"}
+]

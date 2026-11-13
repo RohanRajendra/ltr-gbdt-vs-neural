@@ -1,0 +1,32 @@
+{
+  "dataset": "MSLR-WEB30K",
+  "fold": 1,
+  "args": {
+    "dataset": "MSLR-WEB30K",
+    "fold": 1,
+    "epochs": 20,
+    "batch": 64,
+    "list_size": 200,
+    "lr": 0.001,
+    "hidden": 512,
+    "layers": 3,
+    "dropout": 0.3,
+    "noise": 1.5,
+    "patience": 5,
+    "seed": 0
+  },
+  "device": "mps",
+  "epochs_run": 8,
+  "best_vali_ndcg5": 0.4281,
+  "train_sec": 2137.6,
+  "predict_ms_per_query": 8.9303,
+  "ndcg@1_one": 0.4361,
+  "ndcg@1_zero": 0.4062,
+  "ndcg@1_skip": 0.4187,
+  "ndcg@5_one": 0.4267,
+  "ndcg@5_zero": 0.3967,
+  "ndcg@5_skip": 0.409,
+  "ndcg@10_one": 0.4461,
+  "ndcg@10_zero": 0.4162,
+  "ndcg@10_skip": 0.429
+}

@@ -1,0 +1,29 @@
+/Users/adri/scripts/cs6140/project/ltr-gbdt-vs-neural/src/ltr/dasalc.py:40: UserWarning: enable_nested_tensor is True, but self.use_nested_tensor is False because encoder_layer.norm_first was True
+  self.attn = nn.TransformerEncoder(enc, attn_layers)
+MSLR-WEB30K f1 on mps: 18919 train q, load 11s
+epoch 1: loss 4.6042  vali ndcg@5 0.4153
+epoch 2: loss 4.5602  vali ndcg@5 0.4172
+epoch 3: loss 4.5599  vali ndcg@5 0.4281
+epoch 4: loss 4.5597  vali ndcg@5 0.4029
+epoch 5: loss 4.5613  vali ndcg@5 0.4028
+epoch 6: loss 4.5601  vali ndcg@5 0.4039
+epoch 7: loss 4.5591  vali ndcg@5 0.4237
+epoch 8: loss 4.5591  vali ndcg@5 0.4222
+{
+  "dataset": "MSLR-WEB30K",
+  "fold": 1,
+  "device": "mps",
+  "epochs_run": 8,
+  "best_vali_ndcg5": 0.4281,
+  "train_sec": 2137.6,
+  "predict_ms_per_query": 8.9303,
+  "ndcg@1_one": 0.4361,
+  "ndcg@1_zero": 0.4062,
+  "ndcg@1_skip": 0.4187,
+  "ndcg@5_one": 0.4267,
+  "ndcg@5_zero": 0.3967,
+  "ndcg@5_skip": 0.409,
+  "ndcg@10_one": 0.4461,
+  "ndcg@10_zero": 0.4162,
+  "ndcg@10_skip": 0.429
+}

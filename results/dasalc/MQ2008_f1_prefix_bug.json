@@ -1,0 +1,32 @@
+{
+  "dataset": "MQ2008",
+  "fold": 1,
+  "args": {
+    "dataset": "MQ2008",
+    "fold": 1,
+    "epochs": 40,
+    "batch": 32,
+    "list_size": 200,
+    "lr": 0.001,
+    "hidden": 256,
+    "layers": 3,
+    "dropout": 0.3,
+    "noise": 1.5,
+    "patience": 5,
+    "seed": 0
+  },
+  "device": "mps",
+  "epochs_run": 14,
+  "best_vali_ndcg5": 0.7193,
+  "train_sec": 84.0,
+  "predict_ms_per_query": 1.3192,
+  "ndcg@1_one": 0.656,
+  "ndcg@1_zero": 0.3291,
+  "ndcg@1_skip": 0.4889,
+  "ndcg@5_one": 0.7495,
+  "ndcg@5_zero": 0.4226,
+  "ndcg@5_skip": 0.6278,
+  "ndcg@10_one": 0.7968,
+  "ndcg@10_zero": 0.4699,
+  "ndcg@10_skip": 0.6981
+}

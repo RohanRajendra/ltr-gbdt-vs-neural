@@ -1,0 +1,95 @@
+\documentclass[11pt]{article}
+
+\newcommand{\yourname}{Rohan Rajendra}
+\newcommand{\instructor}{Virgil Pavlu}
+
+%format and packages
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[top=0.6in,bottom=0.7in,left=0.9in,right=0.9in]{geometry}
+\usepackage{microtype}
+\usepackage{kpfonts}
+\usepackage{graphicx}
+\usepackage{palatino}
+\usepackage{verbatim}
+	\DeclareMathAlphabet{\mathtt}{OT1}{cmtt}{m}{n}
+	\SetMathAlphabet{\mathtt}{bold}{OT1}{cmtt}{bx}{n}
+	\DeclareMathAlphabet{\mathsf}{OT1}{cmss}{m}{n}
+	\SetMathAlphabet{\mathsf}{bold}{OT1}{cmss}{bx}{n}
+	\renewcommand*\ttdefault{cmtt}
+	\renewcommand*\sfdefault{cmss}
+	\renewcommand{\baselinestretch}{1.0}
+\usepackage[usenames,dvipsnames]{xcolor}
+\definecolor{DarkGreen}{rgb}{0.15,0.5,0.15}
+\definecolor{DarkRed}{rgb}{0.6,0.2,0.2}
+\definecolor{DarkBlue}{rgb}{0.2,0.2,0.6}
+\definecolor{DarkPurple}{rgb}{0.4,0.2,0.4}
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+	linktocpage=true,
+	colorlinks=true,
+	linkcolor=DarkBlue,
+	citecolor=DarkBlue,
+	urlcolor=DarkBlue,
+}
+
+\setlist[itemize]{nosep, leftmargin=1.3em, topsep=2pt}
+\setlist[enumerate]{nosep, leftmargin=1.5em, topsep=2pt}
+
+\newcommand{\head}[1]{\smallskip\noindent{\color{DarkBlue}\textbf{#1}}}
+
+\begin{document}
+
+{\large
+\begin{center}{CS6140: Machine Learning} --- Project Proposal\end{center}}
+\vspace{-6pt}
+\noindent Track 1: replicate and critique a recent paper \hfill Name: \yourname\ \ (Instructor: \instructor)
+
+\vspace{2pt}
+
+\noindent\textbf{Gradient-Boosted vs.\ Neural Rankers, and Embeddings as Tree Features}
+
+\small
+
+\head{Problem and objective.}
+Gradient-boosted decision trees have led tabular learning-to-rank benchmarks for over a decade. Qin et al.\ (ICLR 2021) asked whether neural rankers had caught up, and found most of them still substantially worse than a well-tuned GBDT. I reproduce that comparison, LambdaMART against their DASALC model, across six benchmarks spanning 2009 to 2022, and identify which dataset characteristics favor each. I then extend it to a question their setup cannot ask, since every dataset in it is anonymized numeric features: what happens when the features come from a transformer. A decision tree splits one coordinate at a time, so a dense embedding, whose meaning lies in directions rather than in individual coordinates, is near the worst case for a GBDT. My prediction is that LambdaMART cannot use raw embedding dimensions, but exceeds the pure-neural result once those are reduced to query--document signals it can threshold on. If that holds, the payoff is cost: neural-quality features at tree-level serving cost.
+
+\head{Related work.}
+Dato et al.\ (SIGIR 2022) find neural rerankers lag feature-based rankers, while neural scores act as strong features \emph{for} those rankers. Jeunen et al.\ (FIRE 2023) report the reverse ordering on a two-billion-point industrial log, crediting embedded categorical features and scale, while noting GBDTs converge better and cost less at smaller sizes. Lyzhin et al.\ (ICML 2023), McElfresh et al.\ (2023), and Shwartz-Ziv \& Armon (2022) disagree about where the crossover sits. Locating that boundary is the point of this project.
+
+\head{Datasets and feasibility.}
+All six are access-confirmed under non-commercial licenses; MQ2008 loads and parses.
+
+\smallskip
+
+{\footnotesize\noindent\begin{tabular}{@{}llrll@{}}
+\toprule
+\textbf{Dataset} & \textbf{Year} & \textbf{Feat.} & \textbf{Scale} & \textbf{Role} \\
+\midrule
+MQ2007 / MQ2008 (LETOR 4.0) & 2009 & 46 & 1.7K / 800 queries & hand-checked case \\
+MSLR-WEB10K & 2010 & 136 & 10K queries & primary benchmark \\
+MSLR-WEB30K & 2010 & 136 & 31K queries & used by Qin et al. \\
+Yahoo! C14B Set 1 & 2010 & $\sim$700 & 30K queries & short lists ($\sim$24/query) \\
+Istella-S & 2016 & 220 & 3.4M pairs & long lists ($\sim$103/query) \\
+\textbf{Istella22} & \textbf{2022} & \textbf{220 + text} & \textbf{8.4M docs} & \textbf{the only set with raw text} \\
+\bottomrule
+\end{tabular}}
+
+\smallskip
+
+\noindent The 2009--2016 sets ship anonymized numeric features and no document text, so no embedding-based model can run on them at all. Istella22 (SIGIR 2022) exists to remove that obstacle, shipping text alongside 220 production features on the same judged pairs, which is why the reproduction and the extension share it. DASALC is specified in enough detail to rebuild in PyTorch; its reference implementation is tied to TensorFlow Ranking. Training runs on Kaggle Notebooks (roughly 30 GPU-hours weekly), with scale reductions reported alongside the numbers they produce. ColBERTv2 indexes only Istella22's judged candidate pools for its 2,198 test queries, not the 8.4M-document corpus, since the task is scoring supplied pairs rather than retrieval.
+
+\head{Method and baselines.}
+\begin{itemize}
+\item \textbf{GBDT baseline:} LightGBM \texttt{lambdarank}, tuned per dataset, on all six benchmarks.
+\item \textbf{Neural ranker:} DASALC, reimplemented in PyTorch, consuming the same feature vectors so the comparison is like-for-like.
+\item \textbf{Crossover analysis:} NDCG@5 and @10 per dataset, sliced by feature count, list length, label distribution, and training-set size.
+\item \textbf{Hybrid:} ColBERTv2 (\texttt{colbert-ir/colbertv2.0}) scores Istella22 pairs, and its per-token MaxSim signals (maximum, mean, query-term coverage) become LambdaMART features. Three feature sets are compared: production features alone, ColBERTv2 signals alone, and both.
+\end{itemize}
+
+\head{Evaluation.}
+Qin et al.\ report NDCG for both the GBDT baseline and DASALC on MSLR-WEB30K, Yahoo, and Istella; my numbers go directly against theirs, with any gap attributed to tuning budget, fold choice, or scale reduction. The Istella22 result predicts that the combined feature set beats either half on its own, which is falsifiable rather than a restatement. One short MQ2008 query list is worked by hand to check $|\Delta\mathrm{NDCG}|$ and the pairwise lambda against LightGBM's gradients. Inference latency is reported alongside NDCG throughout, since the hybrid's argument is cost rather than accuracy alone.
+
+\end{document}

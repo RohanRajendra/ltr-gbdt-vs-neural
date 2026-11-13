@@ -1,0 +1,36 @@
+{
+  "dataset": "MSLR-WEB30K",
+  "fold": 1,
+  "params": {
+    "objective": "lambdarank",
+    "metric": "ndcg",
+    "eval_at": [
+      5,
+      10
+    ],
+    "learning_rate": 0.05,
+    "num_leaves": 255,
+    "min_data_in_leaf": 50,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.9,
+    "bagging_freq": 1,
+    "lambdarank_truncation_level": 20,
+    "seed": 0,
+    "verbose": -1,
+    "num_threads": 0
+  },
+  "best_iter": 704,
+  "train_sec": 225.0,
+  "predict_ms_per_query": 1.575,
+  "n_test_queries": 6306,
+  "frac_test_queries_no_rel": 0.029971455756422453,
+  "ndcg@1_one": 0.522,
+  "ndcg@1_zero": 0.492,
+  "ndcg@1_skip": 0.5072,
+  "ndcg@5_one": 0.5113,
+  "ndcg@5_zero": 0.4813,
+  "ndcg@5_skip": 0.4962,
+  "ndcg@10_one": 0.5284,
+  "ndcg@10_zero": 0.4984,
+  "ndcg@10_skip": 0.5138
+}

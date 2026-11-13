@@ -1,0 +1,36 @@
+{
+  "dataset": "MQ2008",
+  "fold": 4,
+  "params": {
+    "objective": "lambdarank",
+    "metric": "ndcg",
+    "eval_at": [
+      5,
+      10
+    ],
+    "learning_rate": 0.05,
+    "num_leaves": 31,
+    "min_data_in_leaf": 20,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.9,
+    "bagging_freq": 1,
+    "lambdarank_truncation_level": 20,
+    "seed": 0,
+    "verbose": -1,
+    "num_threads": 0
+  },
+  "best_iter": 56,
+  "train_sec": 0.8,
+  "predict_ms_per_query": 0.0095,
+  "n_test_queries": 157,
+  "frac_test_queries_no_rel": 0.2229299363057325,
+  "ndcg@1_one": 0.6327,
+  "ndcg@1_zero": 0.4098,
+  "ndcg@1_skip": 0.5273,
+  "ndcg@5_one": 0.7028,
+  "ndcg@5_zero": 0.4799,
+  "ndcg@5_skip": 0.6175,
+  "ndcg@10_one": 0.765,
+  "ndcg@10_zero": 0.542,
+  "ndcg@10_skip": 0.6976
+}
