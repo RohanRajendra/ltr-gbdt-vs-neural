@@ -13,9 +13,9 @@ We need it for jobs that don't fit on the Mac (16 GB RAM), starting with full Is
 
 3. **Test it:**
 
-       PYENV_VERSION=3.11.15 uvx kaggle datasets list -m
+       PYENV_VERSION=3.11.15 uvx --with six kaggle datasets list -m
 
-   An empty list with no error means the token works.
+   "No datasets found" means the token works. The `--with six` works around a missing dependency in the current kaggle package.
 4. **Test a GPU notebook.** **Create → New Notebook**. In the right panel, set **Accelerator** to "GPU T4 x2" or "P100",
    turn **Internet** on, and run `!nvidia-smi`.
 
