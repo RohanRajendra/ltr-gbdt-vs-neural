@@ -106,6 +106,7 @@ Fold 1 only, one seed, NDCG $\times 100$. Queries with no relevant document are 
 \textbf{Dataset} & \textbf{Model} & \textbf{@1} & \textbf{@5} & \textbf{@10} & \textbf{Qin et al.\ (@1 / @5 / @10)} \\
 \midrule
 MSLR-WEB30K & LightGBM & 50.72 & 49.62 & 51.38 & 50.73 / 49.66 / 51.48 \\
+MSLR-WEB30K & DASALC, no noise & 47.35 & 46.89 & 48.98 & 50.95 / 50.92 / 52.88 \\
 Yahoo Set 1 & LightGBM & 72.25 & 74.81 & 78.98 & 71.88 / 74.21 / 78.02 \\
 Istella-S & LightGBM & 72.06 & 71.60 & 77.79 & --- (paper used full Istella) \\
 MSLR-WEB10K & LightGBM & 47.54 & 47.11 & 49.01 & --- \\
@@ -122,14 +123,14 @@ MQ2008 (5 folds) & LightGBM & 50.9 & 62.6\,$\pm$\,1.8 & 69.1 & --- \\
 \item \textbf{The ``empty query'' rule changes the numbers a lot.} A query with no relevant document has no ideal ranking, so its NDCG is undefined. Tools handle this differently: LightGBM counts it as 1, others count it as 0, others drop it. On MQ2008, where about a third of test queries are empty, the 5-fold mean NDCG@5 is 45.0, 62.6, or 73.1 depending on the rule. The paper does not state its rule, but dropping empty queries reproduces its WEB30K numbers almost exactly, so I use that rule everywhere.
 \item \textbf{The GBDT baseline is reproduced.} WEB30K matches within 0.1. Yahoo is 0.4--1.0 points \emph{higher} than the paper, probably from a different tuning grid; I will check this.
 \item \textbf{DASALC: one bug found and fixed.} My first version applied self-attention to the network's hidden layer. Because the attention block adds its input back to its output, the latent cross became roughly $h + h^2$, and training was unstable (NDCG@5 39.1). Following the paper's equations, attention now runs on the input features, and NDCG@5 rose to 42.1 with noise and 45.0 without.
-\item \textbf{Noise hurts at my current model size.} The paper reports noise helps only with large networks (hidden size up to 4096) and full tuning; my pilot uses 512 and 8 epochs. With noise off, attention beats the plain network (45.0 vs.\ 44.2), as the paper predicts, but LightGBM is still ahead (47.1).
+\item \textbf{Noise hurts at my current model size.} The paper reports noise helps only with large networks (hidden size up to 4096) and full tuning; my pilot uses 512 and 8 epochs. With noise off, attention beats the plain network (45.0 vs.\ 44.2), as the paper predicts, but LightGBM is still ahead (47.1). On WEB30K, DASALC reaches 46.9 NDCG@5, 4 points below the paper's 50.9. That run lasted only 12 epochs (10 minutes) and its validation score was still rising, so it is undertrained; longer, larger runs on Kaggle come next.
 \item \textbf{Scope fix.} The paper's ``Istella'' is the full Istella set, not Istella-S as my proposal said. I downloaded full Istella for the direct comparison and keep Istella-S for the list-length analysis.
 \end{enumerate}
 
 % ---------------------------------------------------------------
 \head{6. Next steps (to Dec 8).}
 \begin{itemize}
-\item LightGBM on full Istella (Kaggle) and MQ2007; tune LightGBM over the paper's grid (trees, leaves, learning rate).
+\item LightGBM on full Istella (running on Kaggle now) and MQ2007; tune LightGBM over the paper's grid (trees, leaves, learning rate).
 \item Tune DASALC on Kaggle GPUs over the paper's ranges (hidden size, layers, attention heads, noise); run WEB30K, Yahoo, and Istella against the paper's DASALC numbers.
 \item Hand-check one short MQ2008 query: compute $|\Delta\mathrm{NDCG}|$ and the pairwise lambdas by hand and compare with LightGBM's gradients.
 \item Istella22 extension: ColBERTv2 signals as LightGBM features (three feature sets).
