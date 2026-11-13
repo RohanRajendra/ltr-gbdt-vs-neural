@@ -1,0 +1,161 @@
+\documentclass[11pt]{article}
+
+\newcommand{\yourname}{Rohan Rajendra}
+\newcommand{\instructor}{Virgil Pavlu}
+
+%format and packages
+
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage[top=0.6in,bottom=0.7in,left=0.9in,right=0.9in]{geometry}
+\usepackage{microtype}
+\usepackage{kpfonts}
+\usepackage{graphicx}
+\usepackage{palatino}
+\usepackage{verbatim}
+	\DeclareMathAlphabet{\mathtt}{OT1}{cmtt}{m}{n}
+	\SetMathAlphabet{\mathtt}{bold}{OT1}{cmtt}{bx}{n}
+	\DeclareMathAlphabet{\mathsf}{OT1}{cmss}{m}{n}
+	\SetMathAlphabet{\mathsf}{bold}{OT1}{cmss}{bx}{n}
+	\renewcommand*\ttdefault{cmtt}
+	\renewcommand*\sfdefault{cmss}
+	\renewcommand{\baselinestretch}{1.0}
+\usepackage[usenames,dvipsnames]{xcolor}
+\definecolor{DarkGreen}{rgb}{0.15,0.5,0.15}
+\definecolor{DarkRed}{rgb}{0.6,0.2,0.2}
+\definecolor{DarkBlue}{rgb}{0.2,0.2,0.6}
+\definecolor{DarkPurple}{rgb}{0.4,0.2,0.4}
+\usepackage[pdftex]{hyperref}
+\hypersetup{
+	linktocpage=true,
+	colorlinks=true,
+	linkcolor=DarkBlue,
+	citecolor=DarkBlue,
+	urlcolor=DarkBlue,
+}
+
+\setlist[itemize]{nosep, leftmargin=1.3em, topsep=2pt}
+\setlist[enumerate]{nosep, leftmargin=1.5em, topsep=2pt}
+
+\newcommand{\head}[1]{\smallskip\noindent{\color{DarkBlue}\textbf{#1}}}
+\newcommand{\done}{{\color{DarkGreen}\textbf{done}}}
+\newcommand{\todo}{{\color{DarkRed}\textbf{to do}}}
+
+\begin{document}
+
+{\large
+\begin{center}{CS6140: Machine Learning} --- Checkpoint Progress Report\end{center}}
+\vspace{-6pt}
+\noindent Track 1: replicate and critique a recent paper \hfill Name: \yourname\ \ (Instructor: \instructor)
+
+\vspace{2pt}
+
+\noindent\textbf{Gradient-Boosted vs.\ Neural Rankers, and Embeddings as Tree Features}
+
+\small
+
+\head{Summary.}
+The pipeline runs end to end. LightGBM has run on every dataset except Istella22, which is needed only for the extension. It matches Qin et al.'s published MSLR-WEB30K numbers to within 0.1 NDCG points when queries with no relevant document are left out. It is 0.4--1.0 points above the paper on Yahoo and 0.6--0.8 below on full Istella. The paper does not say how it scores queries with no relevant document, so the WEB30K match is strong evidence but not proof (finding 1). My PyTorch DASALC now follows the paper's design, after one bug fix and five smaller corrections (findings 3 and 5). On WEB30K it is 2.0 NDCG@5 points below the paper's comparable result, using a small, briefly trained model.
+
+% ---------------------------------------------------------------
+\head{1. Problem, solution, and pipeline.}
+\emph{Problem:} learning to rank, meaning: given a query and its candidate documents (each a feature vector), order the documents so the most relevant come first. Quality is measured with NDCG@$k$, which rewards putting highly relevant documents near the top.
+\emph{Question:} do neural rankers now match gradient-boosted trees (Qin et al., ICLR 2021), on which kinds of datasets, and can trees use transformer signals as features?
+\emph{Pipeline} (same for every dataset, so comparisons are fair):
+\begin{enumerate}
+\item \textbf{Load} the SVMlight files into arrays grouped by query; cache them for fast reloads.
+\item \textbf{Train} on the train split, pick the stopping point on the validation split, report on the test split.
+\item \textbf{Models:} LightGBM \texttt{lambdarank} (LambdaMART) and DASALC, a feed-forward network with a log1p input transform, Gaussian-noise data augmentation, self-attention over each query's document list, and a ``latent cross'' that mixes the list context into each document.
+\item \textbf{Evaluate} with one hand-written NDCG function shared by both models, plus prediction time per query.
+\item \textbf{Extension (Istella22):} ColBERTv2 scores each query--document pair from the raw text; its signals are added as LightGBM features.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\head{2. Datasets: all downloaded and checked} (\done).
+
+\smallskip
+{\footnotesize\noindent\begin{tabular}{@{}lrrll@{}}
+\toprule
+\textbf{Dataset} & \textbf{Feat.} & \textbf{Unpacked} & \textbf{Source} & \textbf{Role} \\
+\midrule
+MQ2007 / MQ2008 & 46 & 0.45 GB & Microsoft LETOR 4.0 & hand-checked case \\
+MSLR-WEB10K / 30K & 136 & 6.6 / 20 GB & Microsoft (MD5 checked) & main / paper comparison \\
+Yahoo! C14B Set 1 & 700 & 2.6 GB & Hugging Face (Yahoo Research) & paper comparison \\
+Istella-S & 220 & 4.9 GB & Istella & long lists \\
+Istella (full) & 220 & 15 GB & Istella & paper comparison (\emph{added}, see \S5) \\
+Istella22 & 220 + text & 25 GB & Istella & extension (text + features) \\
+\bottomrule
+\end{tabular}}
+
+\smallskip
+\noindent Every archive unpacked without checksum errors, and MSLR also matches Microsoft's published MD5 hashes. Istella22 has the expected 2,198 test queries, and its document-ID file lines up row for row with its feature file. The split sizes I load for WEB30K and Yahoo match the paper's Table 1 exactly.
+
+% ---------------------------------------------------------------
+\head{3. Hardware} (\done).
+Laptop: Apple M4, 10 cores, 16 GB RAM, Apple GPU (PyTorch \texttt{mps}). Every run so far used it, except full Istella. Cloud: Kaggle, with the account set up and its API tested. LightGBM on full Istella ran there: 26 minutes to load the data and 57 minutes to train, on 4 CPU cores with 31 GB RAM (from the job's log). Kaggle's free tier also offers roughly 30 GPU-hours a week (Kaggle's stated limit). Full Istella needed Kaggle because loading its training split was estimated to peak at 15--20 GB, more than the laptop has. The larger DASALC and ColBERTv2 runs will also go there. The datasets are licensed for non-commercial use, so my Kaggle copies are private.
+
+% ---------------------------------------------------------------
+\head{4. Code} (\done, in a git repository).
+A data loader for all formats, which reads large files in chunks to save memory. NDCG@$k$ written by hand, and checked against LightGBM's own NDCG: identical to $10^{-15}$ under LightGBM's empty-query rule. A LightGBM baseline script. DASALC in PyTorch, with a flag that turns off attention to give a plain-network baseline, plus unit tests for the model and loss. A LambdaMART hand-check script, a dataset download guide and extraction script, and a Kaggle job for full Istella. Each run saves its settings, scores, training time, and prediction time to a JSON file.
+
+% ---------------------------------------------------------------
+\head{5. Pilot results and comparison with the paper.}
+NDCG $\times 100$, one seed, Fold 1 unless noted. MQ rows are means over 5 folds ($\pm$ standard deviation across folds). Queries with no relevant document are left out (see finding 1). DASALC and plain-network rows use the paper-matched model (finding 5).
+
+\smallskip
+{\footnotesize\noindent\begin{tabular}{@{}llrrrl@{}}
+\toprule
+\textbf{Dataset} & \textbf{Model} & \textbf{@1} & \textbf{@5} & \textbf{@10} & \textbf{Qin et al.\ (@1 / @5 / @10)} \\
+\midrule
+MSLR-WEB30K & LightGBM & 50.72 & 49.62 & 51.38 & 50.73 / 49.66 / 51.48 \\
+MSLR-WEB30K & DASALC, no noise & 48.66 & 48.49 & 50.57 & 50.19 / 50.49 / 52.47$^\dagger$ \\
+Yahoo Set 1 & LightGBM & 72.25 & 74.81 & 78.98 & 71.88 / 74.21 / 78.02 \\
+Istella (full) & LightGBM & 74.30 & 70.42 & 75.24 & 74.92 / 71.24 / 76.07 \\
+Istella-S & LightGBM & 72.06 & 71.60 & 77.79 & --- (paper used full Istella) \\
+MSLR-WEB10K & LightGBM & 47.54 & 47.11 & 49.01 & --- \\
+MSLR-WEB10K & plain network & 43.94 & 43.81 & 46.05 & --- \\
+MSLR-WEB10K & DASALC, no noise & 46.28 & 45.52 & 47.57 & --- \\
+MSLR-WEB10K & DASALC, noise $\sigma{=}1.5$ & 44.43 & 42.98 & 44.79 & --- \\
+MQ2008 (5 folds) & LightGBM & 50.9 & 62.6\,$\pm$\,1.8 & 69.1 & --- \\
+MQ2007 (5 folds) & LightGBM & 47.6 & 48.6\,$\pm$\,2.5 & 51.7 & --- \\
+\bottomrule
+\end{tabular}}
+
+{\footnotesize\noindent $^\dagger$ The paper's DASALC trained without noise (its Table 8), the fair match for my run. With noise it reports 50.95 / 50.92 / 52.88.}
+
+\smallskip
+\noindent\textbf{What I learned so far.}
+\begin{enumerate}
+\item \textbf{The ``empty query'' rule changes the numbers a lot.} A query with no relevant document has no ideal ranking, so its NDCG is 0/0, which is undefined. LightGBM counts it as 1. TF-Ranking, the library the paper used for its neural models, counts it as 0. A third choice is to leave the query out. On MQ2008, where 28\% of test queries are empty on average, the 5-fold mean NDCG@5 is 45.0, 62.6, or 73.1 under these three rules. The paper does not state its rule. Leaving empty queries out reproduces its WEB30K LightGBM numbers almost exactly, while counting them as 0 puts mine 1.5 points lower at every cutoff. So I use ``leave out'', but this is not settled: if the authors scored everything with TF-Ranking, their LightGBM is simply 1.5 points stronger than mine. On full Istella only 0.14\% of queries are empty, so the rule does not matter there, and my LightGBM is 0.6--0.8 points below the paper. That falls between the two readings of WEB30K (no gap if empty queries are left out, 1.5 points if they count as 0), so it does not settle the question. Running the paper's grid search should: once my LightGBM matches the paper on Istella, the WEB30K rule that then also matches is most likely the paper's.
+\item \textbf{The GBDT baseline is reproduced with one fixed setting.} Under the rule above, WEB30K matches within 0.1 points, Yahoo is 0.4--1.0 points \emph{higher} than the paper, and full Istella is 0.6--0.8 points lower. My LightGBM uses a single setting (255 leaves, learning rate 0.05, early stopping on validation), not yet the paper's grid search, which goes up to 1,000 leaves. Differences of this size are expected, especially on Istella, the largest dataset.
+\item \textbf{DASALC: one bug found and fixed.} My first version applied self-attention to the network's hidden layer instead of to the input features. Because the attention block adds its input back to its output, the latent cross became roughly $h + h^2$. That is the likely reason training was unstable (NDCG@5 39.1 on WEB10K). Following the paper's equations, attention now runs on the input features, and NDCG@5 rose to 42.1 with noise and 45.0 without (before the further changes in finding 5). The fix changed a few parts of the attention block at once, so I have not isolated the exact cause.
+\item \textbf{Noise hurt in my small pilot.} On WEB10K, noise ($\sigma{=}1.5$) lowers DASALC from 45.5 to 43.0 NDCG@5. In the paper, noise helps DASALC but hurts a plain network, and the authors report that larger networks (they searched hidden sizes up to 4096) work better when noise is on. My pilot uses hidden size 512 and only 8 epochs, and the noisy run was still improving when it stopped, which may explain the difference. With noise off, attention beats the plain network (45.5 vs.\ 43.8), as in the paper, but each number is a single run. LightGBM is still ahead (47.1). On WEB30K, DASALC without noise reaches 48.5 NDCG@5. The fair paper number is its DASALC without noise, 50.5, so mine is 2.0 points short and 1.1 points below my own LightGBM. That run lasted 12 epochs (16 minutes), and its best validation score came at epoch 10, so it is likely undertrained.
+\item \textbf{Differences from the paper's DASALC, now fixed.} A separate AI agent reviewed my code against the paper independently, and I checked each point myself. I changed all five to match the paper:
+\begin{enumerate}[label=(\roman*)]
+\item The paper's loss weights each query by its total label, $-\sum_i y_i \log \mathrm{softmax}(s)_i$; mine weighted every query equally.
+\item The paper applies a ReLU after the latent cross, before the last layer (its Eq.~13); mine did not.
+\item The paper's blocks are FC$\to$ReLU$\to$BN with no dropout; mine were FC$\to$BN$\to$ReLU$\to$dropout 0.3.
+\item The paper stacks 3--6 attention layers, each followed by layer normalization, directly on the inputs; mine used 2 layers plus an extra input projection and a feed-forward sublayer. It now uses 3 layers with 4 heads.
+\item The paper skips log1p on Yahoo, whose features are already scaled; mine applied it everywhere.
+\end{enumerate}
+With these fixes, DASALC without noise gained 0.5--0.9 points on WEB10K and 1.3--1.6 points on WEB30K (one run each). Unit tests now check that the loss equals the paper's formula and that scores are permutation equivariant (the paper's Proposition 1). The review also found one rare bug, which I fixed: the loss became NaN when no query in a batch had a relevant document. It never occurred in my runs. The paper does not fix the attention head size (I use 64), the batch size (64 queries), or the documents per query in training (at most 200). I use Adam with learning rate $10^{-3}$, one of the values the paper scanned.
+\item \textbf{Hand check of LambdaMART (done).} I used one MQ2008 query (7 documents, labels 2,0,0,0,0,2,1) with fixed starting scores.
+\begin{enumerate}[label=(\alph*)]
+\item LambdaMART has a shortcut for the NDCG change from swapping two documents: $|G_i - G_j|\cdot|D(r_i) - D(r_j)|/\text{maxDCG}$, with gains $G$ and rank discounts $D$. For all 14 pairs it equals actually swapping them and recomputing NDCG. This is an exact identity, so it checks my code rather than the theory.
+\item I computed every document's gradient $g$ and Hessian $h$ by hand, following LightGBM's lambdarank rules: a sigmoid weight per pair, the NDCG change divided by $(0.01 + \text{score gap})$, and a final rescaling. I then compared the Newton steps, $-g/h$, with the leaf values of a one-tree LightGBM model. Two documents shared a leaf, so that leaf is compared with their combined step. They agree to $5\times10^{-5}$. The remainder comes from LightGBM reading the sigmoid from a lookup table: copying that table brings the difference down to $2.5\times10^{-7}$.
+\end{enumerate}
+\item \textbf{Scope fix.} The paper's ``Istella'' is the full Istella set, not Istella-S as my proposal said: the paper's split sizes add up exactly to full Istella's 10,454,629 documents. Full Istella ships only train and test files, so I hold out a seeded 10\% of training queries for validation. That gives 2,374 queries; the paper used 2,318, and its exact queries are not published. I keep Istella-S for the list-length analysis.
+\end{enumerate}
+
+% ---------------------------------------------------------------
+\head{6. Next steps (to Dec 8).}
+\begin{itemize}
+\item The paper's LightGBM grid search (trees, leaves, learning rate) on every dataset, which should also settle the empty-query rule (finding 1).
+\item Tune DASALC on Kaggle GPUs over the paper's ranges (hidden size up to 4096, layers, attention heads, noise), train longer, and run WEB30K, Yahoo, and Istella against the paper's DASALC numbers. Add DASALC-ens, the paper's ensemble of five DASALC models.
+\item Save per-query NDCG, so I can run the paper's two-tailed t-test and report every result under all three empty-query rules.
+\item Istella22 extension: ColBERTv2 signals as LightGBM features (three feature sets).
+\item Crossover analysis across datasets (feature count, list length, label distribution, training size), with prediction time per query.
+\end{itemize}
+
+\end{document}
