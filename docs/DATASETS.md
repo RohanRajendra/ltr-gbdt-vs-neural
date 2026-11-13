@@ -5,10 +5,10 @@ Put every download in the OneDrive datasets folder (linked as `data/raw`). Never
 ## Status
 | Dataset | Status |
 |---|---|
-| Istella-S, Istella (full), Istella22, `test-svm-docIds.gz` | downloaded (Istella22 archive not yet integrity-checked) |
-| MSLR-WEB10K / WEB30K | TODO |
-| MQ2007 / MQ2008 (LETOR 4.0) | TODO |
-| Yahoo! C14B Set 1 | TODO (needs approval, may take days) |
+| Istella-S, Istella (full), Istella22, `test-svm-docIds.gz` | downloaded |
+| MSLR-WEB10K / WEB30K | downloaded |
+| MQ2007 / MQ2008 (LETOR 4.0) | downloaded |
+| Yahoo! C14B Set 1 | downloaded (Hugging Face) |
 
 ## 1. MSLR-WEB10K and WEB30K
 1. Open https://www.microsoft.com/en-us/research/project/mslr/
@@ -30,12 +30,15 @@ Microsoft's server can be very slow. Start this first and let it run.
 Fallback if the links are dead: ask me and I'll look for a mirror.
 
 ## 3. Yahoo! Learning to Rank Challenge (C14B Set 1)
-1. Create or sign in to a Yahoo account.
-2. Request access at https://research.yahoo.com/datasets (the old Webscope catalog is `webscope.sandbox.yahoo.com`).
-3. Search for "Learning to Rank Challenge" (C14B). Use your Northeastern address and state academic, non-commercial use.
-4. Wait for approval, then download the archive and use Set 1 (~20K train, ~3K valid, ~7K test queries).
+1. Open https://huggingface.co/datasets/YahooResearch/Yahoo-Learning-to-Rank-Challenge/tree/main
+2. Download `yahoo-ltrc-c14-dataset.tgz` and `readme-yahoo-ltrc-c14-dataset.md`. The archive contains a nested `ltrc_yahoo.tar.bz2`.
+3. Use Set 1 (~20K train, ~3K valid, ~7K test queries).
 
-I couldn't confirm the current approval process. If it isn't approved before the checkpoint, report it as "requested, pending".
+## 4. Extract
+Run from the repo root:
 
-## 4. Check what we already have
-- `tar -tzf istella22.tar.gz > /dev/null` (several minutes) to confirm the 26 GB archive isn't truncated.
+    ./scripts/extract_datasets.sh
+
+This checks the MSLR MD5s and unpacks each archive into `data/raw/<name>/`. It is safe to re-run, because finished datasets are skipped. Istella22's inner `.gz` files stay compressed.
+
+In Finder, set the OneDrive `datasets` folder to "Always Keep on This Device" so files aren't moved to the cloud mid-training.
