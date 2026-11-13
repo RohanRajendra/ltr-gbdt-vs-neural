@@ -26,14 +26,22 @@ p.add_argument("--list-size", type=int, default=200, help="docs sampled per quer
 p.add_argument("--lr", type=float, default=1e-3)
 p.add_argument("--hidden", type=int, default=512)
 p.add_argument("--layers", type=int, default=3)
-p.add_argument("--dropout", type=float, default=0.3)
-p.add_argument("--noise", type=float, default=1.5)
+p.add_argument("--dropout", type=float, default=0.0, help="not in the paper; 0 = off")
+p.add_argument("--noise", type=float, default=None,
+               help="Gaussian noise sigma; default 1.5 (paper, Web30K), or 0 with --no-attn")
 p.add_argument("--patience", type=int, default=5)
 p.add_argument("--seed", type=int, default=0)
-p.add_argument("--attn-layers", type=int, default=2)
+p.add_argument("--attn-layers", type=int, default=3, help="paper range 3-6")
+p.add_argument("--heads", type=int, default=4, help="paper range 2-5")
+p.add_argument("--head-size", type=int, default=64, help="attention head size z (not given in paper)")
+p.add_argument("--log1p", choices=("auto", "on", "off"), default="auto",
+               help="auto = off for Yahoo (already normalised, as in the paper), on otherwise")
 p.add_argument("--no-attn", action="store_true", help="plain DNN: no self-attention / latent cross")
 p.add_argument("--tag", default="", help="suffix for the results file name")
 a = p.parse_args()
+if a.noise is None:
+    a.noise = 0.0 if a.no_attn else 1.5  # the paper's plain DNN is best without noise (Table 8)
+use_log1p = a.log1p == "on" or (a.log1p == "auto" and not a.dataset.startswith("yahoo"))
 
 torch.manual_seed(a.seed)
 rng = np.random.default_rng(a.seed)
@@ -41,7 +49,7 @@ dev = "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_av
 
 
 def to_lists(split):
-    X = log1p_transform(split.X).astype(np.float32)
+    X = log1p_transform(split.X, use_log1p).astype(np.float32)
     starts = np.r_[0, np.cumsum(split.group)[:-1]]
     return [(X[s:s + n], split.y[s:s + n]) for s, n in zip(starts, split.group)]
 
@@ -69,7 +77,7 @@ def batches(lists, bs, cap=None, shuffle=False):
 def predict(model, lists):
     model.eval()
     out = []
-    for X, _, M in batches(lists, 32):
+    for X, _, M in batches(lists, 16):  # full lists (up to ~1,250 docs): keep attention memory small
         s = model(X, M)
         out += [s[k][M[k]].cpu().numpy() for k in range(len(s))]
     return np.concatenate(out)
@@ -78,10 +86,12 @@ def predict(model, lists):
 t0 = time.time()
 tr, va, te = (load_split(a.dataset, s, a.fold) for s in ("train", "vali", "test"))
 Ltr, Lva, Lte = to_lists(tr), to_lists(va), to_lists(te)
-print(f"{a.dataset} f{a.fold} on {dev}: {len(Ltr)} train q, load {time.time() - t0:.0f}s")
+print(f"{a.dataset} f{a.fold} on {dev}: {len(Ltr)} train q, load {time.time() - t0:.0f}s, "
+      f"log1p {'on' if use_log1p else 'off'}, noise {a.noise}, attention {'off' if a.no_attn else 'on'}")
 
-model = DASALC(tr.X.shape[1], hidden=a.hidden, layers=a.layers, dropout=a.dropout,
-               noise_std=a.noise, attn_layers=a.attn_layers, use_attn=not a.no_attn).to(dev)
+model = DASALC(tr.X.shape[1], hidden=a.hidden, layers=a.layers, noise_std=a.noise,
+               use_attn=not a.no_attn, attn_layers=a.attn_layers, heads=a.heads,
+               head_size=a.head_size, dropout=a.dropout).to(dev)
 opt = torch.optim.Adam(model.parameters(), lr=a.lr)
 
 best, best_state, bad, t0 = -1.0, None, 0, time.time()
@@ -112,7 +122,7 @@ t0 = time.time()
 score = predict(model, Lte)
 t_pred = time.time() - t0
 
-res = dict(dataset=a.dataset, fold=a.fold, args=vars(a), device=dev, epochs_run=ep + 1,
+res = dict(dataset=a.dataset, fold=a.fold, args=vars(a), log1p=use_log1p, device=dev, epochs_run=ep + 1,
            best_vali_ndcg5=round(best, 4), train_sec=round(t_train, 1),
            predict_ms_per_query=round(1000 * t_pred / te.n_queries, 4))
 for k in (1, 5, 10):
