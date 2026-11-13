@@ -1,0 +1,24 @@
+epoch 1: loss 4.5205  vali ndcg@5 0.4670
+epoch 2: loss 4.5003  vali ndcg@5 0.4706
+epoch 3: loss 4.4951  vali ndcg@5 0.4732
+epoch 4: loss 4.4912  vali ndcg@5 0.4693
+epoch 5: loss 4.4884  vali ndcg@5 0.4712
+epoch 6: loss 4.4861  vali ndcg@5 0.4739
+epoch 7: loss 4.4842  vali ndcg@5 0.4791
+epoch 8: loss 4.4824  vali ndcg@5 0.4782
+epoch 9: loss 4.4818  vali ndcg@5 0.4818
+epoch 10: loss 4.4801  vali ndcg@5 0.4833
+epoch 11: loss 4.4789  vali ndcg@5 0.4876
+epoch 12: loss 4.4766  vali ndcg@5 0.4824
+  "epochs_run": 12,
+  "best_vali_ndcg5": 0.4876,
+  "train_sec": 596.7,
+  "ndcg@1_one": 0.4893,
+  "ndcg@1_zero": 0.4593,
+  "ndcg@1_skip": 0.4735,
+  "ndcg@5_one": 0.4848,
+  "ndcg@5_zero": 0.4549,
+  "ndcg@5_skip": 0.4689,
+  "ndcg@10_one": 0.5051,
+  "ndcg@10_zero": 0.4751,
+  "ndcg@10_skip": 0.4898
