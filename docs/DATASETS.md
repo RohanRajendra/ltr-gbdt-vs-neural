@@ -24,7 +24,7 @@ Microsoft's server can be very slow. Start this first and let it run.
 ## 2. MQ2007 / MQ2008 (LETOR 4.0)
 1. Open https://www.microsoft.com/en-us/research/project/letor-learning-rank-information-retrieval/
 2. Find "LETOR 4.0" and download `MQ2008.rar` and `MQ2007.rar`. Direct links may have moved, so use the page's links.
-3. Unpack with `brew install unar` then `unar MQ2008.rar`.
+3. The extraction script (section 4) unpacks the `.rar` files with macOS's built-in `bsdtar`, so nothing extra needs installing.
 4. Use the `Fold1..Fold5` folders. For supervised ranking, use the files with the 46 features.
 
 Fallback if the links are dead: ask me and I'll look for a mirror.

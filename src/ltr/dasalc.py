@@ -75,7 +75,7 @@ def softmax_ce_loss(scores: torch.Tensor, labels: torch.Tensor, mask: torch.Tens
     tot = labels.sum(1, keepdim=True)
     keep = tot.squeeze(1) > 0
     if not keep.any():
-        return scores.sum() * 0
+        return scores[mask].sum() * 0  # padded scores are -inf, and -inf * 0 = NaN
     target = labels[keep] / tot[keep]
     logp = F.log_softmax(scores[keep], dim=1).masked_fill(~mask[keep], 0)
     return -(target * logp).sum(1).mean()

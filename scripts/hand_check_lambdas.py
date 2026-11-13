@@ -64,22 +64,42 @@ for i in range(n):
         pairs.append((i, j, direct, shortcut))
 
 # ---- Check 2: lambdas by hand ----
-g = np.zeros(n)
-h = np.zeros(n)
-S = 0.0
-for i, j, d, _ in pairs:
-    hi, lo = (i, j) if y[i] > y[j] else (j, i)
-    ds = S0[hi] - S0[lo]
-    dn = d / (0.01 + abs(ds))
-    p = 1 / (1 + np.exp(ds))
-    g[hi] -= p * dn
-    g[lo] += p * dn
-    h[hi] += p * (1 - p) * dn
-    h[lo] += p * (1 - p) * dn
-    S += 2 * p * dn
-scale = np.log2(1 + S) / S
-g *= scale
-h *= scale
+def exact_sigmoid(d):
+    return 1 / (1 + np.exp(d))
+
+
+# LightGBM does not call exp() per pair: it reads the sigmoid from a lookup table of
+# 1024*1024 bins over [-25, 25] (rank_objective.hpp, sigmoid=1). Used for the last check.
+_BINS, _LO = 1024 * 1024, -25.0
+_FAC = _BINS / (2 * -_LO)
+_TABLE = 1.0 / (1.0 + np.exp(np.arange(_BINS) / _FAC + _LO))
+
+
+def table_sigmoid(d):
+    if d <= _LO:
+        return _TABLE[0]
+    if d >= -_LO:
+        return _TABLE[-1]
+    return _TABLE[int((d - _LO) * _FAC)]
+
+
+def lambdas(sigmoid):
+    g, h, S = np.zeros(n), np.zeros(n), 0.0
+    for i, j, d, _ in pairs:
+        hi, lo = (i, j) if y[i] > y[j] else (j, i)
+        ds = S0[hi] - S0[lo]
+        dn = d / (0.01 + abs(ds))
+        p = sigmoid(ds)
+        g[hi] -= p * dn
+        g[lo] += p * dn
+        h[hi] += p * (1 - p) * dn
+        h[lo] += p * (1 - p) * dn
+        S += 2 * p * dn
+    scale = np.log2(1 + S) / S
+    return g * scale, h * scale
+
+
+g, h = lambdas(exact_sigmoid)
 hand_step = -g / h                             # Newton step per doc = leaf value
 
 # ---- LightGBM's own numbers ----
@@ -96,6 +116,10 @@ leaves = bst.predict(X, pred_leaf=True).ravel()
 # If LightGBM puts several docs in one leaf, its value is -(sum g)/(sum h) over those docs.
 hand_leaf = np.array([-g[leaves == lf].sum() / h[leaves == lf].sum() for lf in leaves])
 worst2 = float(np.max(np.abs(lgb_step - hand_leaf)))
+# Same, with LightGBM's lookup-table sigmoid and its float32 gradient storage.
+gt, ht = (v.astype(np.float32).astype(np.float64) for v in lambdas(table_sigmoid))
+table_leaf = np.array([-gt[leaves == lf].sum() / ht[leaves == lf].sum() for lf in leaves])
+worst3 = float(np.max(np.abs(lgb_step - table_leaf)))
 
 print(f"query {QID}: labels {y.tolist()}, start scores {S0.tolist()}")
 print(f"ranking by score (doc ids): {order.tolist()}  NDCG = {ndcg0:.4f}, maxDCG = {max_dcg:.4f}")
@@ -109,6 +133,7 @@ for k in range(n):
     print(f"  {k:3d} {y[k]:5d} {S0[k]:5.1f}  {g[k]:+.6f}  {h[k]:.6f}  {leaves[k]:4d}  {hand_leaf[k]:+.6f}       {lgb_step[k]:+.6f}")
 print(f"  distinct leaves used: {len(set(leaves))} of {n}")
 print(f"  max |leaf step(hand) - leaf step(LightGBM)| = {worst2:.2e}")
+print(f"  same with LightGBM's lookup-table sigmoid + float32 storage: {worst3:.2e}")
 
 out = RESULTS / "hand_check_mq2008.json"
 out.write_text(json.dumps(dict(
@@ -116,5 +141,5 @@ out.write_text(json.dumps(dict(
     pairs=[dict(i=i, j=j, direct=d, shortcut=s) for i, j, d, s in pairs],
     max_diff_dndcg=worst1, grad_hand=g.tolist(), hess_hand=h.tolist(),
     step_hand=hand_step.tolist(), leaf=leaves.tolist(), leaf_step_hand=hand_leaf.tolist(), step_lightgbm=lgb_step.tolist(),
-    max_diff_step=worst2, leaves=len(set(leaves))), indent=2))
+    max_diff_step=worst2, max_diff_step_table_sigmoid=worst3, leaves=len(set(leaves))), indent=2))
 print("saved", out)
