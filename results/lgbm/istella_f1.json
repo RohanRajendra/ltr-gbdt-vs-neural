@@ -1,0 +1,36 @@
+{
+  "dataset": "istella",
+  "fold": 1,
+  "params": {
+    "objective": "lambdarank",
+    "metric": "ndcg",
+    "eval_at": [
+      5,
+      10
+    ],
+    "learning_rate": 0.05,
+    "num_leaves": 255,
+    "min_data_in_leaf": 50,
+    "feature_fraction": 0.9,
+    "bagging_fraction": 0.9,
+    "bagging_freq": 1,
+    "lambdarank_truncation_level": 20,
+    "seed": 0,
+    "verbose": -1,
+    "num_threads": 0
+  },
+  "best_iter": 1342,
+  "train_sec": 3421.2,
+  "predict_ms_per_query": 31.4506,
+  "n_test_queries": 9799,
+  "frac_test_queries_no_rel": 0.0014287172160424534,
+  "ndcg@1_one": 0.7433,
+  "ndcg@1_zero": 0.7419,
+  "ndcg@1_skip": 0.743,
+  "ndcg@5_one": 0.7046,
+  "ndcg@5_zero": 0.7032,
+  "ndcg@5_skip": 0.7042,
+  "ndcg@10_one": 0.7527,
+  "ndcg@10_zero": 0.7513,
+  "ndcg@10_skip": 0.7524
+}
