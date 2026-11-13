@@ -1,0 +1,18 @@
+MSLR-WEB30K f1 on mps: 18919 train q, load 14s, log1p on, noise 0.0, attention on
+epoch 1: loss 383.0743  vali ndcg@5 0.4698
+epoch 2: loss 381.3346  vali ndcg@5 0.4815
+epoch 3: loss 380.8838  vali ndcg@5 0.4880
+epoch 4: loss 380.4299  vali ndcg@5 0.4893
+epoch 5: loss 380.1419  vali ndcg@5 0.4939
+epoch 6: loss 379.8318  vali ndcg@5 0.4941
+epoch 7: loss 379.6046  vali ndcg@5 0.4950
+epoch 8: loss 379.8543  vali ndcg@5 0.4939
+epoch 9: loss 379.5631  vali ndcg@5 0.4967
+epoch 10: loss 379.4281  vali ndcg@5 0.5005
+epoch 11: loss 379.3168  vali ndcg@5 0.4940
+epoch 12: loss 378.9140  vali ndcg@5 0.4960
+  "epochs_run": 12,
+  "train_sec": 957.1,
+  "ndcg@1_skip": 0.4866,
+  "ndcg@5_skip": 0.4849,
+  "ndcg@10_skip": 0.5057
