@@ -30,6 +30,9 @@ p.add_argument("--dropout", type=float, default=0.3)
 p.add_argument("--noise", type=float, default=1.5)
 p.add_argument("--patience", type=int, default=5)
 p.add_argument("--seed", type=int, default=0)
+p.add_argument("--attn-layers", type=int, default=2)
+p.add_argument("--no-attn", action="store_true", help="plain DNN: no self-attention / latent cross")
+p.add_argument("--tag", default="", help="suffix for the results file name")
 a = p.parse_args()
 
 torch.manual_seed(a.seed)
@@ -78,7 +81,7 @@ Ltr, Lva, Lte = to_lists(tr), to_lists(va), to_lists(te)
 print(f"{a.dataset} f{a.fold} on {dev}: {len(Ltr)} train q, load {time.time() - t0:.0f}s")
 
 model = DASALC(tr.X.shape[1], hidden=a.hidden, layers=a.layers, dropout=a.dropout,
-               noise_std=a.noise).to(dev)
+               noise_std=a.noise, attn_layers=a.attn_layers, use_attn=not a.no_attn).to(dev)
 opt = torch.optim.Adam(model.parameters(), lr=a.lr)
 
 best, best_state, bad, t0 = -1.0, None, 0, time.time()
@@ -115,7 +118,7 @@ res = dict(dataset=a.dataset, fold=a.fold, args=vars(a), device=dev, epochs_run=
 for k in (1, 5, 10):
     for empty in ("one", "zero", "skip"):
         res[f"ndcg@{k}_{empty}"] = round(mean_ndcg(te.y, score, te.group, k, empty), 4)
-out = REPO / "results" / "dasalc" / f"{a.dataset}_f{a.fold}.json"
+out = REPO / "results" / "dasalc" / f"{a.dataset}_f{a.fold}{a.tag}.json"
 out.parent.mkdir(parents=True, exist_ok=True)
 out.write_text(json.dumps(res, indent=2))
 print(json.dumps({k: v for k, v in res.items() if k != "args"}, indent=2))

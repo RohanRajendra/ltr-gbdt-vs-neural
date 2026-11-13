@@ -1,0 +1,19 @@
+yahoo-set1 fold 1: train 19944 q / 473134 docs, vali 2994 q, test 6983 q, 700 feats  (load 105s)
+{
+  "dataset": "yahoo-set1",
+  "fold": 1,
+  "best_iter": 900,
+  "train_sec": 391.7,
+  "predict_ms_per_query": 1.2464,
+  "n_test_queries": 6983,
+  "frac_test_queries_no_rel": 0.03551482170986682,
+  "ndcg@1_one": 0.7324,
+  "ndcg@1_zero": 0.6969,
+  "ndcg@1_skip": 0.7225,
+  "ndcg@5_one": 0.757,
+  "ndcg@5_zero": 0.7215,
+  "ndcg@5_skip": 0.7481,
+  "ndcg@10_one": 0.7973,
+  "ndcg@10_zero": 0.7617,
+  "ndcg@10_skip": 0.7898
+}

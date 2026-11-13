@@ -1,0 +1,12 @@
+epoch 1: loss 4.5932  vali ndcg@5 0.4162
+epoch 2: loss 4.5688  vali ndcg@5 0.4222
+epoch 3: loss 4.5632  vali ndcg@5 0.4333
+epoch 4: loss 4.5608  vali ndcg@5 0.4270
+epoch 5: loss 4.5592  vali ndcg@5 0.4349
+epoch 6: loss 4.5566  vali ndcg@5 0.4240
+epoch 7: loss 4.5575  vali ndcg@5 0.4366
+epoch 8: loss 4.5575  vali ndcg@5 0.4339
+  "epochs_run": 8,
+  "ndcg@5_one": 0.442,
+  "ndcg@5_zero": 0.406,
+  "ndcg@5_skip": 0.4212,
