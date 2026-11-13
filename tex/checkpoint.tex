@@ -114,6 +114,7 @@ MSLR-WEB10K & plain network & 44.43 & 44.20 & 46.27 & --- \\
 MSLR-WEB10K & DASALC, no noise & 45.67 & 44.99 & 46.70 & --- \\
 MSLR-WEB10K & DASALC, noise $\sigma{=}1.5$ & 42.37 & 42.12 & 43.61 & --- \\
 MQ2008 (5 folds) & LightGBM & 50.9 & 62.6\,$\pm$\,1.8 & 69.1 & --- \\
+MQ2007 (5 folds) & LightGBM & 47.6 & 48.6\,$\pm$\,2.5 & 51.7 & --- \\
 \bottomrule
 \end{tabular}}
 
@@ -124,15 +125,15 @@ MQ2008 (5 folds) & LightGBM & 50.9 & 62.6\,$\pm$\,1.8 & 69.1 & --- \\
 \item \textbf{The GBDT baseline is reproduced.} WEB30K matches within 0.1. Yahoo is 0.4--1.0 points \emph{higher} than the paper, probably from a different tuning grid; I will check this.
 \item \textbf{DASALC: one bug found and fixed.} My first version applied self-attention to the network's hidden layer. Because the attention block adds its input back to its output, the latent cross became roughly $h + h^2$, and training was unstable (NDCG@5 39.1). Following the paper's equations, attention now runs on the input features, and NDCG@5 rose to 42.1 with noise and 45.0 without.
 \item \textbf{Noise hurts at my current model size.} The paper reports noise helps only with large networks (hidden size up to 4096) and full tuning; my pilot uses 512 and 8 epochs. With noise off, attention beats the plain network (45.0 vs.\ 44.2), as the paper predicts, but LightGBM is still ahead (47.1). On WEB30K, DASALC reaches 46.9 NDCG@5, 4 points below the paper's 50.9. That run lasted only 12 epochs (10 minutes) and its validation score was still rising, so it is undertrained; longer, larger runs on Kaggle come next.
+\item \textbf{Hand check of LambdaMART (done).} On one MQ2008 query (7 documents, labels 2,0,0,0,0,2,1) with fixed starting scores, I checked two things. (a) LambdaMART's shortcut for the NDCG change from swapping two documents, $|g_i - g_j|\cdot|d(r_i) - d(r_j)|/\text{maxDCG}$ (gains $g$, rank discounts $d$), equals actually swapping them and recomputing NDCG, for all 14 pairs (difference below $10^{-15}$). (b) I computed every document's gradient and Hessian by hand, following LightGBM's lambdarank rules: a sigmoid weight per pair, the NDCG change divided by the score gap, and a final rescaling. I then compared the resulting Newton steps, $-g/h$, with the leaf values of a one-tree LightGBM model. They agree to $5\times10^{-5}$; the tiny remainder is most likely LightGBM's lookup-table sigmoid. This confirms I understand exactly what the baseline optimizes.
 \item \textbf{Scope fix.} The paper's ``Istella'' is the full Istella set, not Istella-S as my proposal said. I downloaded full Istella for the direct comparison and keep Istella-S for the list-length analysis.
 \end{enumerate}
 
 % ---------------------------------------------------------------
 \head{6. Next steps (to Dec 8).}
 \begin{itemize}
-\item LightGBM on full Istella (running on Kaggle now) and MQ2007; tune LightGBM over the paper's grid (trees, leaves, learning rate).
+\item LightGBM on full Istella (running on Kaggle now); tune LightGBM over the paper's grid (trees, leaves, learning rate).
 \item Tune DASALC on Kaggle GPUs over the paper's ranges (hidden size, layers, attention heads, noise); run WEB30K, Yahoo, and Istella against the paper's DASALC numbers.
-\item Hand-check one short MQ2008 query: compute $|\Delta\mathrm{NDCG}|$ and the pairwise lambdas by hand and compare with LightGBM's gradients.
 \item Istella22 extension: ColBERTv2 signals as LightGBM features (three feature sets).
 \item Crossover analysis across datasets (feature count, list length, label distribution, training size), with prediction time per query.
 \end{itemize}
