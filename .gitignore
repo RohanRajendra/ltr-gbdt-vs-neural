@@ -235,3 +235,5 @@ wandb/
 
 # LaTeX build output
 tex/build/
+
+docs/papers/
